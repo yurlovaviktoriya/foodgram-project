@@ -1,0 +1,34 @@
+<div class="card-list">
+    {% for recipe in page %}
+    <div class="card" data-id="{{ recipe.id }}">
+        <a href="{% url 'recipe' recipe.author recipe.id %}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Здесь должна быть картинка" class="card__image"></a>
+        <div class="card__body">
+            <a class="card__title link" href="{% url 'recipe' recipe.author recipe.id %}" target="_blank">{{ recipe.name }}</a>
+            <ul class="card__items">
+                {% for tag in recipe.tag.all %}
+                <li class="card__item"><span class="badge badge_style_{{tag.get_color_display}}">{{tag.get_name_display}}</span></li>
+                {% endfor %}
+            </ul>
+            <div class="card__items card__items_column">
+                <p class="card__text"><span class="icon-time"></span> {{ recipe.cook_time }}</p>
+                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author %}" style="color: black">{% if recipe.author.get_full_name %}{{recipe.author.get_full_name}}{% else %}{{recipe.author.username}}{% endif %}</a></p>
+            </div>
+        </div>
+        {% if user.is_authenticated %}
+        {% csrf_token %}
+            <div class="card__footer">
+                {% if recipe in purchases %}
+                    <button class="button button_style_light-blue-outline" name="purchases"><span class="icon-check button__icon"></span> Рецепт добавлен</button>
+                {% else %}
+                    <button class="button button_style_light-blue" name="purchases" data-out><span class="icon-plus button__icon"></span>Добавить в покупки</button>
+                {% endif %}
+                {% if recipe in favorite_recipes %}
+                    <button class="button button_style_none" name="favorites"><span class="icon-favorite icon-favorite_active"></span></button>
+                {% else %}
+                    <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
+                {% endif %}
+            </div>
+        {% endif %}            
+    </div>
+    {% endfor %}
+</div>  

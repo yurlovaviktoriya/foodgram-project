@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}О сайте {% endblock %}
+{% load static %}
+{% block style %}<link rel="stylesheet" href="{% static 'pages/single.css' %}">{% endblock %}
+
+{% block content %}
+{% load user_filters %}
+    <div class="single-card">
+        <img src="{% static 'images/testCardImg.png' %}" alt="Картинка рецепта" class="single-card__image">
+        <div class="single-card__info">
+            <div class="single-card__header-info">
+                <h1 class="single-card__title">Продуктовый помощник</h1>
+            </div>
+            <div class="single-card__section">
+                <h3 class="single-card__section-title">Описание:</h3>
+                <p class=" single-card__section-text">Здесь про меня</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

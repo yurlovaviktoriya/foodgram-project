@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Избранное{% endblock %}
+{% load static %}
+{% block style %}<link rel="stylesheet" href="{% static 'pages/index.css' %}">{% endblock %}
+
+{% block content %}
+    {% load user_filters %}
+        <div class="main__header">
+            <h1 class="main__title">Избранное</h1>
+                {% include 'includes/tags.html' with tags=tags %}
+        </div>
+        
+        {% include 'includes/minicard_recipe.html' with page=page favorite_recipes=favorite_recipes purchases=purchases %}
+
+    {% include 'includes/paginator.html' with page=page paginator=paginator %}
+{% endblock %}
+{% block js %}
+<script src="{% static 'js/components/MainCards.js' %}"></script>
+
+<script src="{% static 'js/components/Purchases.js' %}"></script>
+<script src="{% static 'js/components/Favorites.js' %}"></script>
+
+<script src="{% static 'js/config/config.js' %}"></script>
+<script src="{% static 'js/components/CardList.js' %}"></script>
+<script src="{% static 'js/components/Header.js' %}"></script>
+
+<script src="{% static 'js/api/Api.js' %}"></script>
+<script src="{% static 'favorite.js' %}"></script>
+{% endblock %}
