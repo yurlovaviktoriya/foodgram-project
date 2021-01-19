@@ -25,8 +25,8 @@
                     {% endif %}
                 </div>
                 <ul class="single-card__items">
-                    {% for tag in recipe.tag.all %}
-                        <li class="single-card__item"><span class="badge badge_style_{{ tag.get_color_display }}">{{ tag.get_name_display }}</span></li>
+                    {% for tag in recipe.tags.all %}
+                        <li class="single-card__item"><span class="badge badge_style_{{ tag.color }}">{{ tag.get_name_display }}</span></li>
                     {% endfor %}
                 </ul>
                 <div class="single-card__items single-card__items_column">

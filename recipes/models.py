@@ -3,34 +3,40 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class Ingredient(models.Model):
     title = models.CharField(
-        max_length = 200,
+        max_length=200,
         verbose_name='Наименование ингредиента'
     )
     dimension = models.CharField(
-        max_length = 20,
+        max_length=20,
         verbose_name='Единица измерения'
     )
     
-    class Meta():
+    class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        unique_together = ('title', 'dimension')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'dimension'],
+                name='unique_ingredient'
+            ),
+        ]
 
     def __str__(self):
-        return f'{self.title}, {self.dimension}'
+        return f'{self.title} ({self.dimension}.)'
 
 
 class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='recipes',
         verbose_name='Автор рецепта'
     )
     name = models.CharField(
-        max_length = 250,
+        max_length=250,
         verbose_name='Название рецепта'
     )
     image = models.ImageField(
@@ -38,19 +44,19 @@ class Recipe(models.Model):
         verbose_name='Изображение'
     )
     description = models.CharField(
-        max_length = 3000,
+        max_length=3000,
         verbose_name='Описание рецепта'
     )
     ingredients = models.ManyToManyField(
         'Ingredient',
         through='IngredientQuantity',
         through_fields=('recipe', 'ingredient'),
-        related_name='recipe',
+        related_name='recipes',
         verbose_name='Ингредиент'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         'Tag',
-        related_name='recipe',
+        related_name='recipes',
         verbose_name='Tэг'
     )
     cook_time = models.PositiveSmallIntegerField(
@@ -61,7 +67,7 @@ class Recipe(models.Model):
         verbose_name='Дата публикации'
     )
 
-    class Meta():
+    class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
@@ -87,26 +93,26 @@ class IngredientQuantity(models.Model):
         verbose_name='Количество'
     )
     
-    class Meta():
+    class Meta:
         verbose_name = 'Количество ингредиента в рецепте'
         verbose_name_plural = 'Количество ингредиентов в рецептах'
     
     def __str__(self):
-        return f'Количество {self.ingredient} в {self.recipe}'
+        return f'Количество {self.ingredient} в рецепте"{self.recipe}"'
 
      
 class FavoriteRecipe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorite_recipe',
+        related_name='favorite_recipes',
         verbose_name='Пользователь',
         db_index=False
     )
     recipe = models.ForeignKey(
         'Recipe',
         on_delete=models.CASCADE,
-        related_name='favorite_recipe',
+        related_name='favorite_recipes',
         verbose_name='Рецепт',
         db_index=False
     )
@@ -114,24 +120,29 @@ class FavoriteRecipe(models.Model):
     class Meta:
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-        unique_together = ('user', 'recipe')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_favorite_recipe'
+            ),
+        ]
 
     def __str__(self):
-        return f'Избранные рецепты {self.user}'
+        return f'Избранный рецепт ({self.user})'
 
 
 class Purchase(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='purchase',
+        related_name='purchases',
         verbose_name='Пользователь',
         db_index=False
     )
     recipe = models.ForeignKey(
         'Recipe',
         on_delete=models.CASCADE,
-        related_name='purchase',
+        related_name='purchases',
         verbose_name='Рецепт',
         db_index=False
     )
@@ -139,10 +150,15 @@ class Purchase(models.Model):
     class Meta:
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
-        unique_together = ('user', 'recipe')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_purchase'
+            ),
+        ]
 
     def __str__(self):
-        return f'Покупки {self.user}'
+        return f'Покупка ({self.user})'
     
     
 class Subscription(models.Model):
@@ -164,48 +180,43 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        unique_together = ('user', 'author')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscription'
+            ),
+        ]
 
     def __str__(self):
-        return f'Подписки {self.user}'
+        return f'Подписка ({self.user})'
+
+
+class TagName(models.TextChoices):
+        BREAKFAST = 'breakfast', 'завтрак'
+        DINNER = 'dinner', 'обед'
+        SUPPER = 'supper', 'ужин' 
+
+
+class TagColor(models.TextChoices):
+        BREAKFAST = 'orange'
+        DINNER = 'green'
+        SUPPER = 'purple'
 
 
 class Tag(models.Model):
-    BREAKFAST = 'breakfast'
-    DINNER = 'dinner'
-    SUPPER = 'supper'
-    TAGS = [
-        (BREAKFAST, 'завтрак'),
-        (DINNER, 'обед'),
-        (SUPPER, 'ужин')
-    ]
-    COLORS = [
-        (BREAKFAST, 'orange'),
-        (DINNER, 'green'),
-        (SUPPER, 'purple')
-    ]
-    SLUGS = [
-        (BREAKFAST, 'breakfast'),
-        (DINNER, 'dinner'),
-        (SUPPER, 'supper')
-    ]
-
     name = models.CharField(
         max_length = 20,
         unique=True,
-        choices=TAGS,
+        choices=TagName.choices,
         verbose_name='Тэг',
     )
     color = models.CharField(
         max_length = 20,
         unique=True,
-        choices=COLORS,
+        choices=TagColor.choices,
         verbose_name='Цвет тэга в шаблоне',
     )
-    slug = models.SlugField(
-        choices=SLUGS,
-        verbose_name='Параметр в path',
-    )
+
     class Meta:
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'

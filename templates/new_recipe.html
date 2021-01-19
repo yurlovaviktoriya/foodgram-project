@@ -36,7 +36,7 @@
                         <div class="tags">
                             {% for tag in tags %}
                             <div class="tags__item">
-                                <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.get_color_display}}" {% if tag in tags_of_recipe %} checked {% endif %}>
+                                <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.color}}" {% if tag in tags_of_recipe %} checked {% endif %}>
                                 <label for="id_{{tag.pk}}" class="tags__label">{{tag.get_name_display}}</label>
                             </div>
                             {% endfor %}

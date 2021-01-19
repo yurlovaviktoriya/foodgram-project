@@ -19,14 +19,14 @@ def create_tag_link(request, tag):
     query = request.GET.copy()
     if 'tags' not in str(request.get_full_path):
         tags = ['breakfast', 'dinner', 'supper']
-        tags.remove(tag.slug)
+        tags.remove(tag.name)
         query.setlist('tags', tags)
-    elif tag.slug in request.GET.getlist('tags'):
+    elif tag.name in request.GET.getlist('tags'):
         tags = query.getlist('tags')
-        tags.remove(tag.slug)
+        tags.remove(tag.name)
         query.setlist('tags', tags)
     else:
-        query.appendlist('tags', tag.slug)
+        query.appendlist('tags', tag.name)
     return query.urlencode()
 
 

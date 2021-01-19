@@ -29,12 +29,12 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = (
         'name',
         'author',
-        'tag',
+        'tags',
     )
     empty_value_display = '-пусто-'
     
     def count(self, obj):
-        return obj.favorite_recipe.count()
+        return obj.favorite_recipes.count()
     count.short_description = 'Количество добавлений в избранное'
 
 
