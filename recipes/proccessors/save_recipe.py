@@ -49,7 +49,6 @@ def save_tags(request, recipe, tags):
 def save_ingredients(request, recipe, ingredients):   
     num_of_ingredients = []
     unknown_ingredients = []
-    success = None
     for title, value_list in ingredients.items():
         try:
             num_of_ingredients.append(
