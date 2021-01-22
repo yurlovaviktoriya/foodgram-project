@@ -34,17 +34,33 @@
                     <p class="form__label">{{ form.tag.label }}</p>
                     <div class="form__field-group">
                         <div class="tags">
-                            {% for tag in tags %}
-                            <div class="tags__item">
-                                <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.color}}" {% if tag in tags_of_recipe %} checked {% endif %}>
-                                <label for="id_{{tag.pk}}" class="tags__label">{{tag.get_name_display}}</label>
-                            </div>
-                            {% endfor %}
+                            {% if tag_or_ingredient_empty or ingredient_error %}
+                                {% if not 'tag_empty' in tag_or_ingredient_empty %}
+                                    {% for tag in tags %}
+                                        <div class="tags__item">
+                                            <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.color}}" {% if tag.name in tags_from_query %} checked {% endif %}>
+                                            <label for="id_{{tag.pk}}" class="tags__label">{{tag.get_name_display}}</label>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for tag in tags %}
+                                        <div class="tags__item">
+                                            <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.color}}" {% if tag in tags_of_recipe %} checked {% endif %}>
+                                            <label for="id_{{tag.pk}}" class="tags__label">{{tag.get_name_display}}</label>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% else %}
+                                {% for tag in tags %}
+                                    <div class="tags__item">
+                                        <input type="checkbox" name="{{tag.name}}" id="id_{{tag.pk}}" class="tags__checkbox tags__checkbox_style_{{tag.color}}" {% if tag in tags_of_recipe %} checked {% endif %}>
+                                        <label for="id_{{tag.pk}}" class="tags__label">{{tag.get_name_display}}</label>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
-                        {% if form.errors %}
-                            {% for error in form.tag.errors %}
-                                <span class="form__error">{{ error }}</span>
-                            {% endfor %}
+                        {% if 'tag_empty' in tag_or_ingredient_empty %}
+                            <span class="form__error">Добавьте тэги</span>
                         {% endif %}
                     </div>
                 </div>
@@ -59,21 +75,47 @@
                             </div>
                             <input type="number" id="cantidad" class="form__input" min="0">
                             <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
-                        </div>
-                        
+                        </div>                      
                             <div class="form__field-group-ingredientes-container">
-                                {% if is_edit %}
-                                    {% for each in ingredients_of_recipe %}
+                                {% if tag_or_ingredient_empty %}
+                                    {% if not 'ingredient_empty' in tag_or_ingredient_empty %}
+                                        {% for title, value_list in ingredients_from_query.items %}
+                                            <div class="form__field-item-ingredient" id="ing_{{ forloop.counter }}"><span>{{title}} {{value_list.0}}{{value_list.1}}</span> <span class="form__field-item-delete"></span>
+                                                <input id="nameIngredient_{{ forloop.counter }}" name="nameIngredient_{{ forloop.counter }}" type="hidden" value="{{title}}">
+                                                <input id="valueIngredient_{{ forloop.counter }}" name="valueIngredient_{{ forloop.counter }}" type="hidden" value="{{value_list.0}}">
+                                                <input id="unitsIngredient_{{ forloop.counter }}" name="unitsIngredient_{{ forloop.counter }}" type="hidden" value="{{value_list.1}}">
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}                              
+                                {% elif ingredient_error %}
+                                    {% for each in ingredients_from_query %}
                                         <div class="form__field-item-ingredient" id="ing_{{ forloop.counter }}"><span>{{each.ingredient.title}} {{each.quantity}} {{each.ingredient.dimension}}.</span> <span class="form__field-item-delete"></span>
                                             <input id="nameIngredient_{{ forloop.counter }}" name="nameIngredient_{{ forloop.counter }}" type="hidden" value="{{each.ingredient.title}}">
                                             <input id="valueIngredient_{{ forloop.counter }}" name="valueIngredient_{{ forloop.counter }}" type="hidden" value="{{each.quantity}}">
                                             <input id="unitsIngredient_{{ forloop.counter }}" name="unitsIngredient_{{ forloop.counter }}" type="hidden" value="{{each.ingredient.dimension}}">
                                         </div>
                                     {% endfor%}
+                                {% else %}
+                                    {% if is_edit %}
+                                        {% for each in ingredients_of_recipe %}
+                                            <div class="form__field-item-ingredient" id="ing_{{ forloop.counter }}"><span>{{each.ingredient.title}} {{each.quantity}} {{each.ingredient.dimension}}.</span> <span class="form__field-item-delete"></span>
+                                                <input id="nameIngredient_{{ forloop.counter }}" name="nameIngredient_{{ forloop.counter }}" type="hidden" value="{{each.ingredient.title}}">
+                                                <input id="valueIngredient_{{ forloop.counter }}" name="valueIngredient_{{ forloop.counter }}" type="hidden" value="{{each.quantity}}">
+                                                <input id="unitsIngredient_{{ forloop.counter }}" name="unitsIngredient_{{ forloop.counter }}" type="hidden" value="{{each.ingredient.dimension}}">
+                                            </div>
+                                        {% endfor%}
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
-                        <span class="form__error"></span>
+                        {% if 'ingredient_empty' in tag_or_ingredient_empty %}
+                            <span class="form__error">Добавьте ингредиенты</span>
+                        {% elif ingredient_error %}
+                            <span class="form__error">Ошибка ингредиента. Вы попытались добавить:</span>
+                                {% for ingredient in unknown_ingredients %}
+                                    <span class="form__error">{{ forloop.counter }}. {{ingredient}} - неизвестный ингредиент. Выберите из базы.</span>
+                                {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="form__group">

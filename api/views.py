@@ -38,10 +38,7 @@ def add_subscription(request):
     if author_id is None:
         return JsonResponse({'success': False}, status=400)
     author = get_object_or_404(User, id=author_id)
-    created = Subscription.objects.get_or_create(
-        user=request.user,
-        author=author
-    )
+    Subscription.objects.get_or_create(user=request.user, author=author)
     return JsonResponse({'success': True}) 
 
 
@@ -65,10 +62,7 @@ def add_favorite(request):
     if recipe_id is None:
         return JsonResponse({'success': False}, status=400)
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    created = FavoriteRecipe.objects.get_or_create(
-        user=request.user,
-        recipe=recipe
-    )
+    FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
     return JsonResponse({'success': True})   
 
 
@@ -88,10 +82,7 @@ def add_purchase(request):
     if recipe_id is None:
         return JsonResponse({'success': False}, status=400)    
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    created = Purchase.objects.get_or_create(
-        user=request.user,
-        recipe=recipe
-    )
+    Purchase.objects.get_or_create(user=request.user, recipe=recipe)
     return JsonResponse({'success': True})    
 
 

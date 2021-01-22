@@ -4,6 +4,22 @@ from recipes.models import Recipe, FavoriteRecipe, Purchase
     
 
 def get_recipes_for_index(request):
+    """This function is used to select recipes based on tags. The selected
+    recipes will be displayed on the main page. By default there are three tags
+    in the project: breakfast, dinner, supper. Filtration is carried out by one
+    or several tags.
+
+    Args:
+        request: if the url contains 'tags' from the request, we get the tag
+        values ​​and put them in list 'filter_tags'. Then the length of the list
+        (variable 'len_of_filter_tags') can be equal to 1 ('breakfast' or
+        'dinner' or 'supper'), 2 ('breakfast'and 'dinner' or 'breakfast' and
+        'supper' or 'dinner' and 'supper') or 3 ('breakfast' and 'dinner' and
+        'supper'). Depending on this, filtration occurs.
+
+    Returns:
+        QuerySet[]: list of recipe objects filtered by tags
+    """
     if 'tags' not in str(request.get_full_path):
         recipes = Recipe.objects.all()
         return recipes
@@ -21,13 +37,29 @@ def get_recipes_for_index(request):
     return recipes
 
 
-def get_recipes_for_profile(request, username):        
+def get_recipes_for_profile(request, username):
+    """This function is used to select recipes based on tags. The selected
+    recipes will be displayed on the user's profile page. By default there are
+    three tags in the project: breakfast, dinner, supper. Filtration is carried
+    out by one or several tags.
+
+    Args:
+        request: if the url contains 'tags' from the request, we get the tag
+        values ​​and put them in list 'filter_tags'. Then the length of the list
+        (variable 'len_of_filter_tags') can be equal to 1 ('breakfast' or
+        'dinner' or 'supper'), 2 ('breakfast'and 'dinner' or 'breakfast' and
+        'supper' or 'dinner' and 'supper') or 3 ('breakfast' and 'dinner' and
+        'supper'). Depending on this, filtration occurs.
+
+    Returns:
+        QuerySet[]: list of recipe objects of one author filtered by tags
+    """       
     if 'tags' not in str(request.get_full_path):
         recipes = Recipe.objects.filter(author__username=username)
         return recipes
     filter_tags = request.GET.getlist('tags')
     len_of_filter_tags = len(filter_tags)
-    if  len_of_filter_tags == 1:
+    if len_of_filter_tags == 1:
         recipes = Recipe.objects.filter(
             tags__name=filter_tags[0],
             author__username=username
@@ -43,7 +75,23 @@ def get_recipes_for_profile(request, username):
     return recipes
 
 
-def get_recipes_for_favorite(request): 
+def get_recipes_for_favorite(request):
+    """This function is used to select recipes by tags. The selected
+    recipes will be displayed on the favorite recipes page. By default there
+    are three tags in the project: breakfast, dinner, supper. Filtration is
+    carried out by one or several tags.
+
+    Args:
+        request: if the url contains 'tags' from the request, we get the tag
+        values ​​and put them in list 'filter_tags'. Then the length of the list
+        (variable 'len_of_filter_tags') can be equal to 1 ('breakfast' or
+        'dinner' or 'supper'), 2 ('breakfast'and 'dinner' or 'breakfast' and
+        'supper' or 'dinner' and 'supper') or 3 ('breakfast' and 'dinner' and
+        'supper'). Depending on this, filtration occurs.
+
+    Returns:
+        QuerySet[]: list of favorite recipe objects filtered by tags
+    """ 
     if 'tags' not in str(request.get_full_path):
         favorites = FavoriteRecipe.objects.filter(
             user__username=request.user
@@ -51,16 +99,16 @@ def get_recipes_for_favorite(request):
     else:
         filter_tags = request.GET.getlist('tags')
         len_of_filter_tags = len(filter_tags)
-        if  len_of_filter_tags == 1:
+        if len_of_filter_tags == 1:
             favorites = FavoriteRecipe.objects.filter(
                 recipe__tags__name=filter_tags[0],
                 user__username=request.user
             )
         elif len_of_filter_tags == 2:
             q = (Q(recipe__tags__name=filter_tags[0],
-                    user__username=request.user) |
+                   user__username=request.user) |
                  Q(recipe__tags__name=filter_tags[1],
-                    user__username=request.user))
+                   user__username=request.user))
             favorites = FavoriteRecipe.objects.filter(q).distinct()
         elif len_of_filter_tags == 3:
             favorites = FavoriteRecipe.objects.filter(

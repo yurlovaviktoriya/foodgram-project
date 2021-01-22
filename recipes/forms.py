@@ -3,7 +3,7 @@ from django.forms import ModelForm, Textarea, FileInput
 from .models import Recipe
 
 class RecipeForm(ModelForm):
-    class Meta():
+    class Meta:
         model = Recipe
         fields = (
             'name',

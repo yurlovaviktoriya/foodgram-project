@@ -102,9 +102,9 @@ def favorite_recipes(request):
 
 @login_required
 def new_recipe(request):
+    tags = Tag.objects.all()
     if request.method == 'GET':
         form = RecipeForm()
-        tags = Tag.objects.all()
         context = {
             'form': form,
             'is_edit': False,
@@ -113,15 +113,47 @@ def new_recipe(request):
         }
         return render(request, 'new_recipe.html', context)
     form = RecipeForm(request.POST, files=request.FILES or None)
+    (tag_or_ingredient_empty,
+     tags_from_query,
+     ingredients_from_query) = sr.check_query(request)
+    if tag_or_ingredient_empty:
+        context = {
+        'form': form,
+         'is_edit': False,
+         'tags': tags,
+         'new': True,
+         'tag_or_ingredient_empty': tag_or_ingredient_empty,
+         'tags_from_query': tags_from_query,
+         'ingredients_from_query': ingredients_from_query
+         }
+        return render(request, 'new_recipe.html', context)
     if not form.is_valid():
-        context = { 'form': form, 'is_edit': False, 'new': True}
+        context = {'form': form, 'is_edit': False, 'tags': tags, 'new': True}
         return render(request, 'new_recipe.html', context) 
     recipe = form.save(commit=False)
     recipe.author = request.user
     recipe.save()
     new_recipe = Recipe.objects.get(id=recipe.id)
-    sr.save_tags(request, new_recipe)
-    sr.save_ingredients(request, recipe)
+    sr.save_tags(request, new_recipe, tags_from_query)
+    success, ingredients_from_query, unknown_ingredients = sr.save_ingredients(
+        request,
+        recipe,
+        ingredients_from_query
+    )
+    if not success:
+        context = {
+        'form': form,
+         'is_edit': False,
+         'tags': tags,
+         'recipe': recipe,
+         'new': True,
+         'tag_or_ingredient_empty': tag_or_ingredient_empty,
+         'tags_from_query': tags_from_query,
+         'ingredients_from_query': ingredients_from_query,
+         'ingredient_error': True,
+         'unknown_ingredients': unknown_ingredients
+         }
+        return render(request, 'new_recipe.html', context)
     return redirect(
         'recipe',
         username=request.user.username,
@@ -132,13 +164,13 @@ def new_recipe(request):
 @login_required
 def recipe_edit(request, username, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id, author__username=username)
+    tags = Tag.objects.all()
     form = RecipeForm(
         request.POST or None,
         files=request.FILES or None,
         instance=recipe
     )
     if request.method == 'GET' and recipe.author == request.user:
-        tags = Tag.objects.all()
         tags_of_recipe = recipe.tags.all()
         ingredients_of_recipe = recipe.ingredientquantity_set.all()
         context = {
@@ -151,14 +183,54 @@ def recipe_edit(request, username, recipe_id):
             'new': True
         }
         return render( request, 'new_recipe.html', context)
+    (tag_or_ingredient_empty,
+     tags_from_query,
+     ingredients_from_query) = sr.check_query(request)
+    if tag_or_ingredient_empty:
+        context = {
+        'form': form,
+         'is_edit': True,
+         'tags': tags,
+         'recipe': recipe,
+         'new': True,
+         'tag_or_ingredient_empty': tag_or_ingredient_empty,
+         'tags_from_query': tags_from_query,
+         'ingredients_from_query': ingredients_from_query
+         }
+        return render(request, 'new_recipe.html', context)
     if not form.is_valid():
-        context = { 'form': form, 'is_edit': True, 'new': True}
+        context = {
+            'form': form,
+            'tags': tags,
+            'recipe': recipe,
+            'tag_or_ingredient_empty': tag_or_ingredient_empty,
+            'is_edit': True,
+            'new': True
+        }
         return render(request, 'new_recipe.html', context)  
     form.save()
     recipe.tags.clear()
-    sr.save_tags(request, recipe)
+    sr.save_tags(request, recipe, tags_from_query)
     recipe.ingredientquantity_set.all().delete()
-    sr.save_ingredients(request, recipe)
+    success, ingredients_from_query, unknown_ingredients = sr.save_ingredients(
+        request,
+        recipe,
+        ingredients_from_query
+    )
+    if not success:
+        context = {
+        'form': form,
+         'is_edit': True,
+         'tags': tags,
+         'recipe': recipe,
+         'new': True,
+         'tag_or_ingredient_empty': tag_or_ingredient_empty,
+         'tags_from_query': tags_from_query,
+         'ingredients_from_query': ingredients_from_query,
+         'ingredient_error': True,
+         'unknown_ingredients': unknown_ingredients
+         }
+        return render(request, 'new_recipe.html', context)
     return redirect(
         'recipe',
         username=recipe.author.username,
