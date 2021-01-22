@@ -59,9 +59,9 @@ def save_ingredients(request, recipe, ingredients):
                 )
             )
         except Ingredient.DoesNotExist:
-            success = False
             unknown_ingredients.append(title)
-    if unknown_ingredients:    
+    if unknown_ingredients:
+        success = False   
         return success, num_of_ingredients, unknown_ingredients       
     IngredientQuantity.objects.bulk_create(num_of_ingredients)
     success = True
