@@ -22,9 +22,11 @@
             </li>
             {% endfor %}
         </ul>
-        <a target="_blank" href="{% url 'generate_pdf' %}"><button class="button button_style_blue">Скачать список</button></a>
-
-    {% endblock %}
+        {% if num_purchases > 0 %}
+            <a target="_blank" href="{% url 'generate_pdf' %}"><button class="button button_style_blue">Скачать список</button></a>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block js %}
 <script src="{% static 'js/config/config.js' %}"></script>

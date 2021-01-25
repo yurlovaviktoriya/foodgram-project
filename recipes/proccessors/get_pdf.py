@@ -3,7 +3,9 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.rl_config import TTFSearchPath
 
+from django.conf import settings
 from django.http import HttpResponse
 
 from recipes.models import Recipe, Purchase, IngredientQuantity
@@ -31,6 +33,7 @@ def generate_pdf(request):
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     data = get_purchase_data(request)
+    TTFSearchPath.append(f'{settings.BASE_DIR}/static/fonts')
     pdfmetrics.registerFont(TTFont('dejavu-serif', 'dejavu-serif.ttf'))
     p.setFont('dejavu-serif', 15, leading=None)
     p.setFillColorRGB(0, 0, 255)

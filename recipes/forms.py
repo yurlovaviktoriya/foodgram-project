@@ -31,4 +31,4 @@ class RecipeForm(ModelForm):
                 'class': 'form__file'
             })
         }
-       
+        

@@ -16,6 +16,7 @@ from .models import (
 
 def index(request):
     recipes = gr.get_recipes_for_index(request)
+    recipe_count = recipes.count()
     paginator = Paginator(recipes, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -103,13 +104,15 @@ def favorite_recipes(request):
 @login_required
 def new_recipe(request):
     tags = Tag.objects.all()
+    num_purchases = Purchase.objects.filter(user=request.user).count()
     if request.method == 'GET':
         form = RecipeForm()
         context = {
             'form': form,
             'is_edit': False,
             'tags': tags,
-            'new': True
+            'new': True,
+            'num_purchases': num_purchases,
         }
         return render(request, 'new_recipe.html', context)
     form = RecipeForm(request.POST, files=request.FILES or None)
@@ -124,11 +127,18 @@ def new_recipe(request):
          'new': True,
          'tag_or_ingredient_empty': tag_or_ingredient_empty,
          'tags_from_query': tags_from_query,
-         'ingredients_from_query': ingredients_from_query
+         'ingredients_from_query': ingredients_from_query,
+         'num_purchases': num_purchases
          }
         return render(request, 'new_recipe.html', context)
     if not form.is_valid():
-        context = {'form': form, 'is_edit': False, 'tags': tags, 'new': True}
+        context = {
+            'form': form,
+            'is_edit': False,
+            'tags': tags,
+            'new': True,
+            'num_purchases': num_purchases
+        }
         return render(request, 'new_recipe.html', context) 
     recipe = form.save(commit=False)
     recipe.author = request.user
@@ -151,7 +161,8 @@ def new_recipe(request):
          'tags_from_query': tags_from_query,
          'ingredients_from_query': ingredients_from_query,
          'ingredient_error': True,
-         'unknown_ingredients': unknown_ingredients
+         'unknown_ingredients': unknown_ingredients,
+         'num_purchases': num_purchases
          }
         return render(request, 'new_recipe.html', context)
     return redirect(
@@ -163,6 +174,7 @@ def new_recipe(request):
  
 @login_required
 def recipe_edit(request, username, recipe_id):
+    num_purchases = Purchase.objects.filter(user=request.user).count()
     recipe = get_object_or_404(Recipe, pk=recipe_id, author__username=username)
     tags = Tag.objects.all()
     form = RecipeForm(
@@ -180,7 +192,8 @@ def recipe_edit(request, username, recipe_id):
             'tags_of_recipe': tags_of_recipe,
             'ingredients_of_recipe': ingredients_of_recipe,
             'is_edit': True,
-            'new': True
+            'new': True,
+            'num_purchases': num_purchases
         }
         return render( request, 'new_recipe.html', context)
     (tag_or_ingredient_empty,
@@ -195,7 +208,8 @@ def recipe_edit(request, username, recipe_id):
          'new': True,
          'tag_or_ingredient_empty': tag_or_ingredient_empty,
          'tags_from_query': tags_from_query,
-         'ingredients_from_query': ingredients_from_query
+         'ingredients_from_query': ingredients_from_query,
+         'num_purchases': num_purchases
          }
         return render(request, 'new_recipe.html', context)
     if not form.is_valid():
@@ -205,7 +219,8 @@ def recipe_edit(request, username, recipe_id):
             'recipe': recipe,
             'tag_or_ingredient_empty': tag_or_ingredient_empty,
             'is_edit': True,
-            'new': True
+            'new': True,
+            'num_purchases': num_purchases
         }
         return render(request, 'new_recipe.html', context)  
     form.save()
@@ -228,7 +243,8 @@ def recipe_edit(request, username, recipe_id):
          'tags_from_query': tags_from_query,
          'ingredients_from_query': ingredients_from_query,
          'ingredient_error': True,
-         'unknown_ingredients': unknown_ingredients
+         'unknown_ingredients': unknown_ingredients,
+         'num_purchases': num_purchases
          }
         return render(request, 'new_recipe.html', context)
     return redirect(
