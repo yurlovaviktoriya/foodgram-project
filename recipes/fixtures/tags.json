@@ -3,8 +3,8 @@
         "model": "recipes.tag",
         "pk": 1,
         "fields": {
-            "name": "supper",
-            "color": "purple"
+            "name": "breakfast",
+            "color": "orange"
         }
     },
     {
@@ -19,8 +19,8 @@
         "model": "recipes.tag",
         "pk": 3,
         "fields": {
-            "name": "breakfast",
-            "color": "orange"
+            "name": "supper",
+            "color": "purple"
         }
     }
 ]

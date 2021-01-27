@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea, FileInput
+from django.forms import ModelForm, Textarea
 
 from .models import Recipe
 
@@ -24,11 +24,6 @@ class RecipeForm(ModelForm):
                 'id': 'id_description',
                 'rows': '8',
                 'class': 'form__textarea'
-            }),
-            'image': FileInput(attrs={
-                'name': 'file',
-                'id': 'id_file',
-                'class': 'form__file'
             })
         }
         
